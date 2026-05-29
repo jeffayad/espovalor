@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ValorPay Account Transactions</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:#2563eb;--green:#16a34a}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);padding:24px}.wrap{max-width:1300px;margin:0 auto}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 25px rgba(17,24,39,.06);padding:22px;margin-bottom:18px}h1{margin:0 0 6px;font-size:26px}h2{margin:0 0 14px;font-size:20px}.muted{color:var(--muted);font-size:14px}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}input,button,select{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;background:#fff}button{background:var(--primary);color:white;border-color:var(--primary);cursor:pointer;font-weight:600}.stats{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:12px;margin-top:18px}.stat{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fafafa}.stat .label{color:var(--muted);font-size:13px}.stat .value{font-size:24px;font-weight:700;margin-top:4px}.grand{background:linear-gradient(135deg,#eff6ff,#fff);border:1px solid #bfdbfe}.grand .value{color:#1d4ed8}.summary-grid{display:grid;grid-template-columns:1fr;gap:12px}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:13px 12px;border-bottom:1px solid var(--border);text-align:left;font-size:14px;white-space:nowrap}th{background:#f9fafb;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.04em}.amount{font-weight:700;text-align:right}.summary-amount{font-weight:800;text-align:right;color:#166534}.summary-count{font-weight:800}.summary-total-row td{background:#f8fafc;font-weight:900;border-top:2px solid #dbeafe}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#eef2ff;color:#3730a3}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}pre{background:#111827;color:#d1fae5;padding:16px;border-radius:12px;overflow:auto;max-height:520px}.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:14px;border-radius:12px;white-space:pre-wrap}.terminal-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.terminal-pill{border:1px solid var(--border);background:#f9fafb;border-radius:999px;padding:7px 10px;font-size:13px}.error-pill{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<h1>Valor Transactions</h1>
+<div class="muted" id="accountLabel">Loading account...</div>
+<div class="terminal-list" id="terminalList"></div>
+<div class="controls">
+<input type="date" id="startDate"><input type="date" id="endDate">
+<select id="terminalFilter" onchange="renderFilteredRows()"><option value="">All Terminals</option></select>
+<button onclick="loadTransactions()">Load Transactions</button>
+<button onclick="runDebug()" style="background:#111827;border-color:#111827;">Debug Espo</button>
+</div>
+<div class="stats">
+<div class="stat"><div class="label">Transactions</div><div class="value" id="count">—</div></div>
+<div class="stat grand"><div class="label">Grand Total Volume</div><div class="value" id="total">—</div></div>
+<div class="stat"><div class="label">Terminals</div><div class="value" id="terminalCount">—</div></div>
+<div class="stat"><div class="label">Date Range</div><div class="value" id="range" style="font-size:16px;">Last 24 Hours</div></div>
+</div></div>
+
+<div class="card">
+<h2>Terminal Summary</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Terminal</th><th>EPI</th><th style="text-align:right;">Transactions</th><th style="text-align:right;">Volume</th></tr></thead>
+<tbody id="summaryRows"><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="card"><h2>Transaction Details</h2><div class="table-scroll"><table><thead><tr><th>Terminal</th><th>Date</th><th>Time</th><th>Type</th><th>Status</th><th>Card</th><th>Last 4 / PAN</th><th>Auth</th><th>Txn ID</th><th style="text-align:right;">Amount</th></tr></thead><tbody id="rows"><tr><td colspan="10">Loading...</td></tr></tbody></table></div></div>
+<details class="card"><summary>Raw / Debug Response</summary><pre id="raw">Loading...</pre></details>
+</div>
+<script>
+const params=new URLSearchParams(window.location.search);const accountId=params.get("accountId");let lastTransactions=[];let lastSummary=[];
+function money(n){return Number(n||0).toLocaleString(undefined,{style:"currency",currency:"USD"})}
+function esc(value){return String(value??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function todayISO(){return new Date().toISOString().slice(0,10)}
+function yesterdayISO(){return new Date(Date.now()-24*60*60*1000).toISOString().slice(0,10)}
+document.getElementById("startDate").value=yesterdayISO();document.getElementById("endDate").value=todayISO();
+
+function renderSummary(summary){
+ const body=document.getElementById("summaryRows");
+ if(!summary||!summary.length){body.innerHTML=`<tr><td colspan="4">No terminal summary available.</td></tr>`;return}
+ const totalCount=summary.reduce((s,t)=>s+(Number(t.count)||0),0);
+ const totalVolume=summary.reduce((s,t)=>s+(Number(t.volume)||0),0);
+ body.innerHTML=summary.map(t=>{
+   const err=t.error?` <span class="badge bad">Error</span>`:"";
+   return `<tr><td>${esc(t.name||"Terminal")}${err}</td><td>${esc(t.epi||"—")}</td><td class="summary-count" style="text-align:right;">${Number(t.count||0).toLocaleString()}</td><td class="summary-amount">${money(t.volume)}</td></tr>`;
+ }).join("")+`<tr class="summary-total-row"><td colspan="2">Grand Total</td><td style="text-align:right;">${totalCount.toLocaleString()}</td><td class="summary-amount">${money(totalVolume)}</td></tr>`;
+}
+
+function renderFilteredRows(){
+ const rows=document.getElementById("rows");const terminalFilter=document.getElementById("terminalFilter").value;let txns=lastTransactions;
+ if(terminalFilter)txns=txns.filter(t=>t.terminalEpi===terminalFilter);
+ const totalCount=txns.length; const totalVolume=txns.reduce((sum,row)=>sum+(Number(row.amount)||0),0);
+ document.getElementById("count").textContent=totalCount.toLocaleString();document.getElementById("total").textContent=money(totalVolume);
+ if(!txns.length){rows.innerHTML=`<tr><td colspan="10">No transactions found.</td></tr>`;return}
+ rows.innerHTML=txns.map(t=>{const status=(t.status||"").toUpperCase();const badgeClass=status.includes("APPROV")||status==="00"||status.includes("SUCCESS")?"ok":status.includes("DECLIN")||status.includes("ERROR")||status.includes("FAIL")?"bad":"";return `<tr><td>${esc(t.terminalName||t.terminalEpi||"—")}</td><td>${esc(t.date)}</td><td>${esc(t.time)}</td><td><span class="badge">${esc(t.type||"—")}</span></td><td><span class="badge ${badgeClass}">${esc(t.status||"—")}</span></td><td>${esc(t.cardType||"—")}</td><td>${esc(t.pan||"—")}</td><td>${esc(t.authCode||"—")}</td><td>${esc(t.refTxnId||"—")}</td><td class="amount">${money(t.amount)}</td></tr>`}).join("")
+}
+async function runDebug(){const raw=document.getElementById("raw");if(!accountId){raw.textContent="Missing accountId.";return}raw.textContent="Running Espo debug...";const res=await fetch(`/api/debug-espo?accountId=${encodeURIComponent(accountId)}`);const data=await res.json();raw.textContent=JSON.stringify(data,null,2)}
+async function loadTransactions(){const rows=document.getElementById("rows");const summary=document.getElementById("summaryRows");const raw=document.getElementById("raw");
+ if(!accountId){rows.innerHTML=`<tr><td colspan="10"><div class="error">Missing accountId in URL. Example: ?accountId=ESPO_ACCOUNT_ID</div></td></tr>`;summary.innerHTML=`<tr><td colspan="4">Missing accountId.</td></tr>`;raw.textContent="Missing accountId.";return}
+ rows.innerHTML=`<tr><td colspan="10">Loading...</td></tr>`;summary.innerHTML=`<tr><td colspan="4">Loading...</td></tr>`;raw.textContent="Loading...";
+ const startDate=document.getElementById("startDate").value;const endDate=document.getElementById("endDate").value;
+ try{const res=await fetch(`/api/account-transactions?accountId=${encodeURIComponent(accountId)}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);const data=await res.json();raw.textContent=JSON.stringify(data,null,2);
+  if(!data.success){rows.innerHTML=`<tr><td colspan="10"><div class="error">${esc(JSON.stringify(data,null,2))}</div></td></tr>`;summary.innerHTML=`<tr><td colspan="4">Error loading summary.</td></tr>`;return}
+  lastTransactions=data.transactions||[];lastSummary=data.terminalSummary||data.terminals||[];
+  document.getElementById("accountLabel").textContent=(data.account?.name?`Account: ${data.account.name}`:`Account ID: ${accountId}`)+(data.entityNameUsed?` | Entity: ${data.entityNameUsed}`:"");
+  document.getElementById("terminalCount").textContent=(data.terminals?.length??0).toLocaleString();document.getElementById("range").textContent=`${data.startDate} → ${data.endDate}`;
+  document.getElementById("terminalList").innerHTML=(data.terminals||[]).map(t=>{const cls=t.error?"terminal-pill error-pill":"terminal-pill";return `<span class="${cls}" title="${esc(JSON.stringify(t.error||""))}">${esc(`${t.name||t.epi||"Terminal"} (${t.count||0}) ${money(t.volume||0)}`)}</span>`}).join("");
+  document.getElementById("terminalFilter").innerHTML=`<option value="">All Terminals</option>`+(data.terminals||[]).map(t=>`<option value="${esc(t.epi||"")}">${esc(t.name||t.epi||"Terminal")}</option>`).join("");
+  renderSummary(lastSummary);renderFilteredRows()
+ }catch(e){rows.innerHTML=`<tr><td colspan="10"><div class="error">${esc(e.message)}</div></td></tr>`;summary.innerHTML=`<tr><td colspan="4">Error loading summary.</td></tr>`;raw.textContent=e.stack||e.message}}
+loadTransactions();
+</script>
+</body>
+</html>
