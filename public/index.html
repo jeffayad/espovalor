@@ -2,85 +2,80 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ValorPay Account Transactions</title>
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:#2563eb;--green:#16a34a}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);padding:24px}.wrap{max-width:1300px;margin:0 auto}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 25px rgba(17,24,39,.06);padding:22px;margin-bottom:18px}h1{margin:0 0 6px;font-size:26px}h2{margin:0 0 14px;font-size:20px}.muted{color:var(--muted);font-size:14px}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}input,button,select{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;background:#fff}button{background:var(--primary);color:white;border-color:var(--primary);cursor:pointer;font-weight:600}.stats{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:12px;margin-top:18px}.stat{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fafafa}.stat .label{color:var(--muted);font-size:13px}.stat .value{font-size:24px;font-weight:700;margin-top:4px}.grand{background:linear-gradient(135deg,#eff6ff,#fff);border:1px solid #bfdbfe}.grand .value{color:#1d4ed8}.summary-grid{display:grid;grid-template-columns:1fr;gap:12px}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:13px 12px;border-bottom:1px solid var(--border);text-align:left;font-size:14px;white-space:nowrap}th{background:#f9fafb;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.04em}.amount{font-weight:700;text-align:right}.summary-amount{font-weight:800;text-align:right;color:#166534}.summary-count{font-weight:800}.summary-total-row td{background:#f8fafc;font-weight:900;border-top:2px solid #dbeafe}.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#eef2ff;color:#3730a3}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}pre{background:#111827;color:#d1fae5;padding:16px;border-radius:12px;overflow:auto;max-height:520px}.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:14px;border-radius:12px;white-space:pre-wrap}.terminal-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.terminal-pill{border:1px solid var(--border);background:#f9fafb;border-radius:999px;padding:7px 10px;font-size:13px}.error-pill{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+:root{--bg:#0b1020;--bg2:#111827;--card:rgba(255,255,255,.94);--soft:rgba(255,255,255,.08);--border:rgba(148,163,184,.25);--text:#0f172a;--muted:#64748b;--primary:#4f46e5;--primary2:#06b6d4;--good:#16a34a;--bad:#dc2626;--warn:#d97706;--shadow:0 24px 70px rgba(2,6,23,.28)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,#1d4ed8 0,#111827 35%,#020617 100%);color:var(--text);min-height:100vh;padding:28px}.wrap{max-width:1440px;margin:0 auto}.hero{color:white;border:1px solid rgba(255,255,255,.14);background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border-radius:28px;padding:26px;box-shadow:var(--shadow);backdrop-filter:blur(18px);margin-bottom:18px}.hero-top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap}h1{margin:0;font-size:34px;letter-spacing:-.04em;line-height:1.05}.subtitle{color:#cbd5e1;font-size:15px;margin-top:9px}.card{background:var(--card);border:1px solid rgba(255,255,255,.55);border-radius:24px;box-shadow:var(--shadow);padding:22px;margin-bottom:18px}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:11px;color:#cbd5e1;text-transform:uppercase;letter-spacing:.08em;font-weight:800}input,button,select{border:1px solid var(--border);border-radius:14px;padding:11px 13px;font-size:14px;background:white;min-height:44px}button{background:linear-gradient(135deg,var(--primary),var(--primary2));color:white;border:0;cursor:pointer;font-weight:800;box-shadow:0 14px 28px rgba(79,70,229,.26)}button.secondary{background:#0f172a;box-shadow:0 14px 28px rgba(15,23,42,.22)}button.ghost{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);box-shadow:none}.stats{display:grid;grid-template-columns:repeat(5,minmax(160px,1fr));gap:14px;margin-top:20px}.stat{border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:16px;background:rgba(255,255,255,.10);color:white}.stat .label{color:#cbd5e1;font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:800}.stat .value{font-size:27px;font-weight:900;margin-top:7px;letter-spacing:-.03em}.grid{display:grid;grid-template-columns:1fr 390px;gap:18px}.section-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.section-title h2{font-size:19px;margin:0;letter-spacing:-.02em}.muted{color:var(--muted);font-size:14px}.table-scroll{overflow:auto;border:1px solid #e2e8f0;border-radius:18px}table{width:100%;border-collapse:separate;border-spacing:0;background:white}th,td{padding:14px 13px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px;white-space:nowrap}th{position:sticky;top:0;background:#f8fafc;color:#475569;font-size:11px;text-transform:uppercase;letter-spacing:.07em;z-index:1}tr:hover td{background:#f8fafc}.amount{font-weight:900;text-align:right}.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:900;background:#eef2ff;color:#3730a3}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}.warn{background:#fef3c7;color:#92400e}.terminal-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.terminal-pill{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:white;border-radius:999px;padding:8px 11px;font-size:13px;font-weight:800}.error-pill{background:#fee2e2;color:#991b1b;border-color:#fecaca}.batch-card{border:1px solid #e2e8f0;border-radius:18px;padding:15px;margin-bottom:12px;background:linear-gradient(180deg,#fff,#f8fafc)}.batch-card .top{display:flex;justify-content:space-between;gap:10px}.batch-no{font-size:17px;font-weight:950}.batch-total{font-size:20px;font-weight:950}.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.mini div{background:#f1f5f9;border-radius:12px;padding:9px}.mini span{display:block;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:800}.mini b{display:block;margin-top:3px}.insights{display:grid;gap:10px}.insight{display:flex;gap:10px;padding:12px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0}.dot{width:10px;height:10px;border-radius:99px;background:var(--primary);margin-top:5px;flex:0 0 auto}.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:14px;border-radius:14px;white-space:pre-wrap}pre{background:#020617;color:#bbf7d0;padding:16px;border-radius:16px;overflow:auto;max-height:520px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.search{min-width:240px}@media(max-width:1080px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){body{padding:14px}h1{font-size:28px}.stats{grid-template-columns:1fr}.hero,.card{border-radius:20px}.search{min-width:100%}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="card">
-<h1>Valor Transactions</h1>
-<div class="muted" id="accountLabel">Loading account...</div>
-<div class="terminal-list" id="terminalList"></div>
-<div class="controls">
-<input type="date" id="startDate"><input type="date" id="endDate">
-<select id="terminalFilter" onchange="renderFilteredRows()"><option value="">All Terminals</option></select>
-<button onclick="loadTransactions()">Load Transactions</button>
-<button onclick="runDebug()" style="background:#111827;border-color:#111827;">Debug Espo</button>
-</div>
-<div class="stats">
-<div class="stat"><div class="label">Transactions</div><div class="value" id="count">—</div></div>
-<div class="stat grand"><div class="label">Grand Total Volume</div><div class="value" id="total">—</div></div>
-<div class="stat"><div class="label">Terminals</div><div class="value" id="terminalCount">—</div></div>
-<div class="stat"><div class="label">Date Range</div><div class="value" id="range" style="font-size:16px;">Last 24 Hours</div></div>
-</div></div>
+  <section class="hero">
+    <div class="hero-top">
+      <div>
+        <h1>Valor Transaction Intelligence</h1>
+        <div class="subtitle" id="accountLabel">Loading account...</div>
+        <div class="terminal-list" id="terminalList"></div>
+      </div>
+      <button class="ghost" onclick="runDebug()">Debug Espo</button>
+    </div>
+    <div class="controls">
+      <div class="field"><label>Start Date</label><input type="date" id="startDate"></div>
+      <div class="field"><label>End Date</label><input type="date" id="endDate"></div>
+      <div class="field"><label>Terminal</label><select id="terminalFilter" onchange="renderDashboard()"><option value="">All Terminals</option></select></div>
+      <div class="field"><label>Search</label><input class="search" id="searchBox" placeholder="Card, auth, txn ID..." oninput="renderDashboard()"></div>
+      <div class="field"><label>&nbsp;</label><button onclick="loadTransactions()">Refresh Report</button></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="label">Transactions</div><div class="value" id="count">—</div></div>
+      <div class="stat"><div class="label">Approved Total</div><div class="value" id="approvedTotal">—</div></div>
+      <div class="stat"><div class="label">Gross Total</div><div class="value" id="total">—</div></div>
+      <div class="stat"><div class="label">Avg Ticket</div><div class="value" id="avgTicket">—</div></div>
+      <div class="stat"><div class="label">Date Range</div><div class="value" id="range" style="font-size:16px;">Last 24 Hours</div></div>
+    </div>
+  </section>
 
-<div class="card">
-<h2>Terminal Summary</h2>
-<div class="table-scroll">
-<table>
-<thead><tr><th>Terminal</th><th>EPI</th><th style="text-align:right;">Transactions</th><th style="text-align:right;">Volume</th></tr></thead>
-<tbody id="summaryRows"><tr><td colspan="4">Loading...</td></tr></tbody>
-</table>
-</div>
-</div>
+  <div class="grid">
+    <main class="card">
+      <div class="section-title">
+        <div><h2>Recent Transactions</h2><div class="muted">Newest transactions now appear first, sorted by parsed date/time.</div></div>
+        <div class="muted" id="terminalCount">— terminals</div>
+      </div>
+      <div class="table-scroll"><table><thead><tr><th>Terminal</th><th>Date</th><th>Time</th><th>Type</th><th>Status</th><th>Card</th><th>Last 4 / PAN</th><th>Auth</th><th>Batch</th><th>Txn ID</th><th style="text-align:right;">Amount</th></tr></thead><tbody id="rows"><tr><td colspan="11">Loading...</td></tr></tbody></table></div>
+    </main>
 
-<div class="card"><h2>Transaction Details</h2><div class="table-scroll"><table><thead><tr><th>Terminal</th><th>Date</th><th>Time</th><th>Type</th><th>Status</th><th>Card</th><th>Last 4 / PAN</th><th>Auth</th><th>Txn ID</th><th style="text-align:right;">Amount</th></tr></thead><tbody id="rows"><tr><td colspan="10">Loading...</td></tr></tbody></table></div></div>
-<details class="card"><summary>Raw / Debug Response</summary><pre id="raw">Loading...</pre></details>
+    <aside>
+      <section class="card">
+        <div class="section-title"><div><h2>Last 3 Batches</h2><div class="muted">Grouped from the returned transaction batch fields.</div></div></div>
+        <div id="batchList"><div class="muted">Loading...</div></div>
+      </section>
+      <section class="card">
+        <div class="section-title"><div><h2>Customer-Friendly Insights</h2><div class="muted">Useful info merchants usually care about.</div></div></div>
+        <div class="insights" id="insights"></div>
+      </section>
+    </aside>
+  </div>
+
+  <details class="card"><summary>Raw / Debug Response</summary><pre id="raw">Loading...</pre></details>
 </div>
 <script>
-const params=new URLSearchParams(window.location.search);const accountId=params.get("accountId");let lastTransactions=[];let lastSummary=[];
+const params=new URLSearchParams(window.location.search);const accountId=params.get("accountId");let lastTransactions=[];let lastData=null;
 function money(n){return Number(n||0).toLocaleString(undefined,{style:"currency",currency:"USD"})}
 function esc(value){return String(value??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function yesterdayISO(){return new Date(Date.now()-24*60*60*1000).toISOString().slice(0,10)}
+function isApproved(t){const s=String(t.status||"").toUpperCase();return s.includes("APPROV")||s==="00"||s.includes("SUCCESS")}
+function isDeclined(t){const s=String(t.status||"").toUpperCase();return s.includes("DECLIN")||s.includes("ERROR")||s.includes("FAIL")}
 document.getElementById("startDate").value=yesterdayISO();document.getElementById("endDate").value=todayISO();
-
-function renderSummary(summary){
- const body=document.getElementById("summaryRows");
- if(!summary||!summary.length){body.innerHTML=`<tr><td colspan="4">No terminal summary available.</td></tr>`;return}
- const totalCount=summary.reduce((s,t)=>s+(Number(t.count)||0),0);
- const totalVolume=summary.reduce((s,t)=>s+(Number(t.volume)||0),0);
- body.innerHTML=summary.map(t=>{
-   const err=t.error?` <span class="badge bad">Error</span>`:"";
-   return `<tr><td>${esc(t.name||"Terminal")}${err}</td><td>${esc(t.epi||"—")}</td><td class="summary-count" style="text-align:right;">${Number(t.count||0).toLocaleString()}</td><td class="summary-amount">${money(t.volume)}</td></tr>`;
- }).join("")+`<tr class="summary-total-row"><td colspan="2">Grand Total</td><td style="text-align:right;">${totalCount.toLocaleString()}</td><td class="summary-amount">${money(totalVolume)}</td></tr>`;
-}
-
-function renderFilteredRows(){
- const rows=document.getElementById("rows");const terminalFilter=document.getElementById("terminalFilter").value;let txns=lastTransactions;
- if(terminalFilter)txns=txns.filter(t=>t.terminalEpi===terminalFilter);
- const totalCount=txns.length; const totalVolume=txns.reduce((sum,row)=>sum+(Number(row.amount)||0),0);
- document.getElementById("count").textContent=totalCount.toLocaleString();document.getElementById("total").textContent=money(totalVolume);
- if(!txns.length){rows.innerHTML=`<tr><td colspan="10">No transactions found.</td></tr>`;return}
- rows.innerHTML=txns.map(t=>{const status=(t.status||"").toUpperCase();const badgeClass=status.includes("APPROV")||status==="00"||status.includes("SUCCESS")?"ok":status.includes("DECLIN")||status.includes("ERROR")||status.includes("FAIL")?"bad":"";return `<tr><td>${esc(t.terminalName||t.terminalEpi||"—")}</td><td>${esc(t.date)}</td><td>${esc(t.time)}</td><td><span class="badge">${esc(t.type||"—")}</span></td><td><span class="badge ${badgeClass}">${esc(t.status||"—")}</span></td><td>${esc(t.cardType||"—")}</td><td>${esc(t.pan||"—")}</td><td>${esc(t.authCode||"—")}</td><td>${esc(t.refTxnId||"—")}</td><td class="amount">${money(t.amount)}</td></tr>`}).join("")
-}
+function filteredTransactions(){const terminalFilter=document.getElementById("terminalFilter").value;const q=document.getElementById("searchBox").value.trim().toLowerCase();let txns=[...lastTransactions];if(terminalFilter)txns=txns.filter(t=>t.terminalEpi===terminalFilter);if(q)txns=txns.filter(t=>[t.terminalName,t.terminalEpi,t.date,t.time,t.type,t.status,t.cardType,t.pan,t.authCode,t.refTxnId,t.batchNo,t.batchId,t.amount].join(" ").toLowerCase().includes(q));txns.sort((a,b)=>(Number(b.timestamp)||0)-(Number(a.timestamp)||0));return txns}
+function renderRows(txns){const rows=document.getElementById("rows");if(!txns.length){rows.innerHTML=`<tr><td colspan="11">No transactions found.</td></tr>`;return}rows.innerHTML=txns.map(t=>{const status=(t.status||"").toUpperCase();const badgeClass=isApproved(t)?"ok":isDeclined(t)?"bad":"warn";return `<tr><td>${esc(t.terminalName||t.terminalEpi||"—")}</td><td>${esc(t.date||"—")}</td><td>${esc(t.time||"—")}</td><td><span class="badge">${esc(t.type||"—")}</span></td><td><span class="badge ${badgeClass}">${esc(t.status||"—")}</span></td><td>${esc(t.cardType||"—")}</td><td>${esc(t.pan||"—")}</td><td>${esc(t.authCode||"—")}</td><td>${esc(t.batchNo||t.batchId||"—")}</td><td>${esc(t.refTxnId||"—")}</td><td class="amount">${money(t.amount)}</td></tr>`}).join("")}
+function buildBatches(txns){const map=new Map();for(const t of txns){const batchNo=t.batchNo||t.batchId||"Unbatched";const key=`${t.terminalEpi||""}:${batchNo}`;if(!map.has(key))map.set(key,{batchNo,batchId:t.batchId||"",terminalName:t.terminalName||t.terminalEpi||"Terminal",terminalEpi:t.terminalEpi||"",transactionCount:0,approvedCount:0,declinedCount:0,totalAmount:0,latestTimestamp:0,latestDate:"",latestTime:""});const b=map.get(key);b.transactionCount++;b.totalAmount+=Number(t.amount)||0;if(isApproved(t))b.approvedCount++;if(isDeclined(t))b.declinedCount++;if((Number(t.timestamp)||0)>=b.latestTimestamp){b.latestTimestamp=Number(t.timestamp)||0;b.latestDate=t.date||"";b.latestTime=t.time||""}}return [...map.values()].sort((a,b)=>b.latestTimestamp-a.latestTimestamp).slice(0,3)}
+function renderBatches(txns){const el=document.getElementById("batchList");const batches=buildBatches(txns);if(!batches.length){el.innerHTML='<div class="muted">No batch info found in this date range.</div>';return}el.innerHTML=batches.map(b=>`<div class="batch-card"><div class="top"><div><div class="batch-no">Batch ${esc(b.batchNo)}</div><div class="muted">${esc(b.terminalName)} · ${esc(b.latestDate)} ${esc(b.latestTime)}</div></div><div class="batch-total">${money(b.totalAmount)}</div></div><div class="mini"><div><span>Txns</span><b>${b.transactionCount}</b></div><div><span>Approved</span><b>${b.approvedCount}</b></div><div><span>Declined</span><b>${b.declinedCount}</b></div></div></div>`).join("")}
+function renderInsights(txns){const el=document.getElementById("insights");const total=txns.reduce((s,t)=>s+(Number(t.amount)||0),0);const approved=txns.filter(isApproved);const declined=txns.filter(isDeclined);const avg=txns.length?total/txns.length:0;const cardCounts={};for(const t of txns){const c=t.cardType||"Unknown";cardCounts[c]=(cardCounts[c]||0)+1}const topCard=Object.entries(cardCounts).sort((a,b)=>b[1]-a[1])[0];const items=[`Approval rate: ${txns.length?Math.round((approved.length/txns.length)*100):0}% (${approved.length}/${txns.length}).`,`Declines/errors: ${declined.length}. This helps merchants spot payment issues fast.`,`Average ticket: ${money(avg)}. Good for understanding normal customer spend.`,topCard?`Most used card type: ${topCard[0]} (${topCard[1]} txns).`:`Most used card type: no data yet.`,`Other useful quirks to add next: refunds/voids total, tips, cash discount/surcharge amount, terminal health, and settlement status.`];el.innerHTML=items.map(x=>`<div class="insight"><span class="dot"></span><div>${esc(x)}</div></div>`).join("")}
+function renderDashboard(){const txns=filteredTransactions();const total=txns.reduce((sum,row)=>sum+(Number(row.amount)||0),0);const approvedTotal=txns.filter(isApproved).reduce((sum,row)=>sum+(Number(row.amount)||0),0);document.getElementById("count").textContent=txns.length;document.getElementById("total").textContent=money(total);document.getElementById("approvedTotal").textContent=money(approvedTotal);document.getElementById("avgTicket").textContent=money(txns.length?total/txns.length:0);renderRows(txns);renderBatches(txns);renderInsights(txns)}
 async function runDebug(){const raw=document.getElementById("raw");if(!accountId){raw.textContent="Missing accountId.";return}raw.textContent="Running Espo debug...";const res=await fetch(`/api/debug-espo?accountId=${encodeURIComponent(accountId)}`);const data=await res.json();raw.textContent=JSON.stringify(data,null,2)}
-async function loadTransactions(){const rows=document.getElementById("rows");const summary=document.getElementById("summaryRows");const raw=document.getElementById("raw");
- if(!accountId){rows.innerHTML=`<tr><td colspan="10"><div class="error">Missing accountId in URL. Example: ?accountId=ESPO_ACCOUNT_ID</div></td></tr>`;summary.innerHTML=`<tr><td colspan="4">Missing accountId.</td></tr>`;raw.textContent="Missing accountId.";return}
- rows.innerHTML=`<tr><td colspan="10">Loading...</td></tr>`;summary.innerHTML=`<tr><td colspan="4">Loading...</td></tr>`;raw.textContent="Loading...";
- const startDate=document.getElementById("startDate").value;const endDate=document.getElementById("endDate").value;
- try{const res=await fetch(`/api/account-transactions?accountId=${encodeURIComponent(accountId)}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);const data=await res.json();raw.textContent=JSON.stringify(data,null,2);
-  if(!data.success){rows.innerHTML=`<tr><td colspan="10"><div class="error">${esc(JSON.stringify(data,null,2))}</div></td></tr>`;summary.innerHTML=`<tr><td colspan="4">Error loading summary.</td></tr>`;return}
-  lastTransactions=data.transactions||[];lastSummary=data.terminalSummary||data.terminals||[];
-  document.getElementById("accountLabel").textContent=(data.account?.name?`Account: ${data.account.name}`:`Account ID: ${accountId}`)+(data.entityNameUsed?` | Entity: ${data.entityNameUsed}`:"");
-  document.getElementById("terminalCount").textContent=(data.terminals?.length??0).toLocaleString();document.getElementById("range").textContent=`${data.startDate} → ${data.endDate}`;
-  document.getElementById("terminalList").innerHTML=(data.terminals||[]).map(t=>{const cls=t.error?"terminal-pill error-pill":"terminal-pill";return `<span class="${cls}" title="${esc(JSON.stringify(t.error||""))}">${esc(`${t.name||t.epi||"Terminal"} (${t.count||0}) ${money(t.volume||0)}`)}</span>`}).join("");
-  document.getElementById("terminalFilter").innerHTML=`<option value="">All Terminals</option>`+(data.terminals||[]).map(t=>`<option value="${esc(t.epi||"")}">${esc(t.name||t.epi||"Terminal")}</option>`).join("");
-  renderSummary(lastSummary);renderFilteredRows()
- }catch(e){rows.innerHTML=`<tr><td colspan="10"><div class="error">${esc(e.message)}</div></td></tr>`;summary.innerHTML=`<tr><td colspan="4">Error loading summary.</td></tr>`;raw.textContent=e.stack||e.message}}
+async function loadTransactions(){const rows=document.getElementById("rows");const raw=document.getElementById("raw");if(!accountId){rows.innerHTML=`<tr><td colspan="11"><div class="error">Missing accountId in URL. Example: ?accountId=ESPO_ACCOUNT_ID</div></td></tr>`;raw.textContent="Missing accountId.";return}rows.innerHTML=`<tr><td colspan="11">Loading...</td></tr>`;raw.textContent="Loading...";const startDate=document.getElementById("startDate").value;const endDate=document.getElementById("endDate").value;try{const res=await fetch(`/api/account-transactions?accountId=${encodeURIComponent(accountId)}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);const data=await res.json();lastData=data;raw.textContent=JSON.stringify(data,null,2);if(!data.success){rows.innerHTML=`<tr><td colspan="11"><div class="error">${esc(JSON.stringify(data,null,2))}</div></td></tr>`;return}lastTransactions=(data.transactions||[]).sort((a,b)=>(Number(b.timestamp)||0)-(Number(a.timestamp)||0));document.getElementById("accountLabel").textContent=(data.account?.name?`Account: ${data.account.name}`:`Account ID: ${accountId}`)+(data.entityNameUsed?` · Entity: ${data.entityNameUsed}`:"");document.getElementById("terminalCount").textContent=`${data.terminals?.length??0} terminals`;document.getElementById("range").textContent=`${data.startDate} → ${data.endDate}`;document.getElementById("terminalList").innerHTML=(data.terminals||[]).map(t=>{const cls=t.error?"terminal-pill error-pill":"terminal-pill";return `<span class="${cls}" title="${esc(JSON.stringify(t.error||""))}">${esc(`${t.name||t.epi||"Terminal"} (${t.count||0})`)}</span>`}).join("");document.getElementById("terminalFilter").innerHTML=`<option value="">All Terminals</option>`+(data.terminals||[]).map(t=>`<option value="${esc(t.epi||"")}">${esc(t.name||t.epi||"Terminal")}</option>`).join("");renderDashboard()}catch(e){rows.innerHTML=`<tr><td colspan="11"><div class="error">${esc(e.message)}</div></td></tr>`;raw.textContent=e.stack||e.message}}
 loadTransactions();
 </script>
 </body>

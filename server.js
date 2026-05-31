@@ -26,6 +26,89 @@ function centsToMoney(value) {
     return n / 100;
 }
 
+
+function parseMoney(value) {
+    if (value === undefined || value === null || value === "") return 0;
+    const n = Number(String(value).replace(/[^0-9.-]/g, ""));
+    if (Number.isNaN(n)) return 0;
+    return n;
+}
+
+function parseValorDateTime(dateValue, timeValue) {
+    const date = String(dateValue || "").trim();
+    const time = String(timeValue || "").trim();
+    const raw = `${date} ${time}`.trim();
+    if (!raw) return 0;
+
+    const direct = Date.parse(raw);
+    if (!Number.isNaN(direct)) return direct;
+
+    const compact = raw.match(/^(\d{4})(\d{2})(\d{2})(?:\s*(\d{2})(\d{2})(\d{2})?)?$/);
+    if (compact) {
+        const [, y, m, d, hh = "00", mm = "00", ss = "00"] = compact;
+        return new Date(`${y}-${m}-${d}T${hh}:${mm}:${ss}`).getTime();
+    }
+
+    const slash = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:\s+(.*))?$/);
+    if (slash) {
+        let [, a, b, y, t = "00:00:00"] = slash;
+        if (y.length === 2) y = `20${y}`;
+        const normalized = `${y}-${a.padStart(2, "0")}-${b.padStart(2, "0")} ${t}`;
+        const parsed = Date.parse(normalized);
+        if (!Number.isNaN(parsed)) return parsed;
+    }
+
+    return 0;
+}
+
+function normalizeBatchNumber(value) {
+    const v = String(value || "").trim();
+    return v || "Unbatched";
+}
+
+function buildRecentBatches(transactions, limit = 3) {
+    const grouped = new Map();
+
+    for (const txn of transactions) {
+        const batchNo = normalizeBatchNumber(txn.batchNo || txn.batchId);
+        const key = `${txn.terminalEpi || ""}::${batchNo}`;
+        if (!grouped.has(key)) {
+            grouped.set(key, {
+                batchNo,
+                batchId: txn.batchId || "",
+                terminalName: txn.terminalName || txn.terminalEpi || "Terminal",
+                terminalEpi: txn.terminalEpi || "",
+                transactionCount: 0,
+                approvedCount: 0,
+                declinedCount: 0,
+                totalAmount: 0,
+                latestTimestamp: 0,
+                latestDate: "",
+                latestTime: ""
+            });
+        }
+
+        const batch = grouped.get(key);
+        const amount = Number(txn.amount) || 0;
+        const status = String(txn.status || "").toUpperCase();
+        const ts = txn.timestamp || parseValorDateTime(txn.date, txn.time);
+
+        batch.transactionCount += 1;
+        batch.totalAmount += amount;
+        if (status.includes("APPROV") || status === "00" || status.includes("SUCCESS")) batch.approvedCount += 1;
+        if (status.includes("DECLIN") || status.includes("ERROR") || status.includes("FAIL")) batch.declinedCount += 1;
+        if (ts >= batch.latestTimestamp) {
+            batch.latestTimestamp = ts;
+            batch.latestDate = txn.date || "";
+            batch.latestTime = txn.time || "";
+        }
+    }
+
+    return Array.from(grouped.values())
+        .sort((a, b) => (b.latestTimestamp || 0) - (a.latestTimestamp || 0))
+        .slice(0, limit);
+}
+
 function findTransactions(data) {
     if (!data) return [];
     if (Array.isArray(data)) return data;
@@ -102,6 +185,7 @@ async function getEspoAccount(accountId) {
 async function getValorTerminals(accountId) {
     const entityName = process.env.VALOR_TERMINAL_ENTITY || "CValorTerminal";
 
+    // Confirmed working in PowerShell/browser. Do not add ?maxSize.
     const data = await espoGet(`/api/v1/${encodeURIComponent(entityName)}`);
 
     let list = [];
@@ -186,7 +270,10 @@ async function callValorForTerminal({ account, terminal, startDate, endDate }) {
         pan: pick(txn, ["PAN", "pan", "masked_card", "card"]),
         authCode: pick(txn, ["AUTH_CODE", "APPROVAL_CODE", "auth_code", "approval_code"]),
         refTxnId: pick(txn, ["REF_TXN_ID", "ref_txn_id", "txn_id", "transaction_id"]),
+        batchNo: pick(txn, ["BATCH_NO", "BATCHNO", "batch_no", "batchNo", "batch_number", "BATCH_NUMBER"]),
+        batchId: pick(txn, ["BATCH_ID", "batch_id", "batchID", "BATCHID"]),
         amount: centsToMoney(pick(txn, ["NET_AMOUNT", "BASE_AMOUNT", "AMOUNT", "amount", "net_amount", "base_amount"])),
+        timestamp: parseValorDateTime(pick(txn, ["DATE", "date", "txn_date", "created_at"]), pick(txn, ["TIME", "time", "txn_time"])),
         raw: txn
     }));
 
@@ -197,7 +284,6 @@ async function callValorForTerminal({ account, terminal, startDate, endDate }) {
             epi
         },
         count: normalized.length,
-        volume: normalized.reduce((sum, row) => sum + (Number(row.amount) || 0), 0),
         transactions: normalized,
         raw
     };
@@ -297,7 +383,6 @@ app.get("/api/account-transactions", async (req, res) => {
                         epi: terminal.epi || ""
                     },
                     count: 0,
-                    volume: 0,
                     transactions: [],
                     error: error.response?.data || error.message
                 });
@@ -306,18 +391,14 @@ app.get("/api/account-transactions", async (req, res) => {
 
         const allTransactions = results.flatMap(result => result.transactions || []);
 
-        allTransactions.sort((a, b) =>
-            (`${b.date || ""} ${b.time || ""}`).localeCompare(`${a.date || ""} ${a.time || ""}`)
-        );
+        allTransactions.sort((a, b) => {
+            const bt = b.timestamp || parseValorDateTime(b.date, b.time);
+            const at = a.timestamp || parseValorDateTime(a.date, a.time);
+            if (bt !== at) return bt - at;
+            return String(b.refTxnId || "").localeCompare(String(a.refTxnId || ""));
+        });
 
-        const terminalSummary = results.map(result => ({
-            id: result.terminal.id,
-            name: result.terminal.name,
-            epi: result.terminal.epi,
-            count: result.count || 0,
-            volume: result.volume || 0,
-            error: result.error || null
-        }));
+        const recentBatches = buildRecentBatches(allTransactions, 3);
 
         res.json({
             success: true,
@@ -328,14 +409,14 @@ app.get("/api/account-transactions", async (req, res) => {
             entityNameUsed: terminalSearch.entityNameUsed,
             startDate,
             endDate,
-            terminalSummary,
-            terminals: terminalSummary,
-            grandTotal: {
-                count: allTransactions.length,
-                volume: allTransactions.reduce((sum, row) => sum + (Number(row.amount) || 0), 0)
-            },
+            terminals: results.map(result => ({
+                ...result.terminal,
+                count: result.count,
+                error: result.error || null
+            })),
             count: allTransactions.length,
             total: allTransactions.reduce((sum, row) => sum + (Number(row.amount) || 0), 0),
+            recentBatches,
             transactions: allTransactions,
             rawByTerminal: results
         });
@@ -350,5 +431,5 @@ app.get("/api/account-transactions", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Valor/Espo terminal summary viewer running on port ${PORT}`);
+    console.log(`Valor/Espo no-maxsize viewer running on port ${PORT}`);
 });

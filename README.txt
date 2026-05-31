@@ -1,11 +1,6 @@
-ValorPay Espo viewer with terminal summary.
+ValorPay Espo viewer - no maxSize version.
 
-Adds:
-- Terminal Summary table
-- Transactions per terminal
-- Volume per terminal
-- Grand Total row
-- Grand Total Volume card
+This version calls /api/v1/CValorTerminal exactly, without ?maxSize=500.
 
 Setup:
 1. Rename .env.example to .env
@@ -14,4 +9,4 @@ Setup:
    npm install
    npm start
 4. Open:
-   http://localhost:3005/?accountId=YOUR_ESPO_ACCOUNT_ID
+   http://localhost:3005/?accountId=6a1276fd9b32738f3
